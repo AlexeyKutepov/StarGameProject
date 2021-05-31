@@ -40,10 +40,8 @@ public class Star extends Sprite {
         height += 0.0001f;
         if (height >= 0.012f) {
             height = 0.008f;
-            setHeightProportion(height);
-        } else {
-            setHeightProportion(height);
         }
+        setHeightProportion(height);
     }
 
     @Override
