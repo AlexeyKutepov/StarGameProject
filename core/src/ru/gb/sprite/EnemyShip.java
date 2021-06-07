@@ -24,6 +24,14 @@ public class EnemyShip extends Ship {
     public void update(float delta) {
         super.update(delta);
         bulletPos.set(pos.x, pos.y - getHalfHeight());
+        if (getTop() < worldBounds.getTop()) {
+            v.set(v0);
+        } else {
+            reloadTimer = reloadInterval * 0.8f;
+        }
+        if (worldBounds.isOutside(this)) {
+            destroy();
+        }
     }
 
     public void set(
@@ -46,6 +54,6 @@ public class EnemyShip extends Ship {
         this.reloadInterval= reloadInterval;
         setHeightProportion(height);
         this.hp = hp;
-        v.set(v0);
+        v.set(0, -0.3f);
     }
 }
