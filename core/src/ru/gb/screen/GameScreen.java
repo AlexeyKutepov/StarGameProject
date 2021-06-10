@@ -18,6 +18,7 @@ import ru.gb.pool.ExplosionPool;
 import ru.gb.sprite.Background;
 import ru.gb.sprite.Bullet;
 import ru.gb.sprite.EnemyShip;
+import ru.gb.sprite.GameOver;
 import ru.gb.sprite.MainShip;
 import ru.gb.sprite.Star;
 import ru.gb.utils.EnemyEmitter;
@@ -26,11 +27,14 @@ public class GameScreen extends BaseScreen {
 
     private static final int STAR_COUNT = 64;
 
+    private enum State {PLAYING, GAME_OVER}
+
     private Texture bg;
     private TextureAtlas atlas;
 
     private Background background;
     private Star[] stars;
+    private GameOver gameOver;
 
     private BulletPool bulletPool;
     private EnemyPool enemyPool;
@@ -43,6 +47,7 @@ public class GameScreen extends BaseScreen {
     private Music music;
 
     private EnemyEmitter enemyEmitter;
+    private State state;
 
     @Override
     public void show() {
@@ -54,6 +59,7 @@ public class GameScreen extends BaseScreen {
         for (int i = 0; i < stars.length; i++) {
             stars[i] = new Star(atlas);
         }
+        gameOver = new GameOver(atlas);
         bulletPool = new BulletPool();
         explosionSound = Gdx.audio.newSound(Gdx.files.internal("sounds/explosion.wav"));
         explosionPool = new ExplosionPool(atlas, explosionSound);
@@ -65,6 +71,7 @@ public class GameScreen extends BaseScreen {
         music = Gdx.audio.newMusic(Gdx.files.internal("sounds/music.mp3"));
         music.setLooping(true);
         music.play();
+        state = State.PLAYING;
     }
 
     @Override
@@ -83,6 +90,7 @@ public class GameScreen extends BaseScreen {
             star.resize(worldBounds);
         }
         mainShip.resize(worldBounds);
+        gameOver.resize(worldBounds);
     }
 
     @Override
@@ -101,25 +109,33 @@ public class GameScreen extends BaseScreen {
 
     @Override
     public boolean keyDown(int keycode) {
-        mainShip.keyDown(keycode);
+        if (state == State.PLAYING) {
+            mainShip.keyDown(keycode);
+        }
         return false;
     }
 
     @Override
     public boolean keyUp(int keycode) {
-        mainShip.keyUp(keycode);
+        if (state == State.PLAYING) {
+            mainShip.keyUp(keycode);
+        }
         return false;
     }
 
     @Override
     public boolean touchDown(Vector2 touch, int pointer, int button) {
-        mainShip.touchDown(touch, pointer, button);
+        if (state == State.PLAYING) {
+            mainShip.touchDown(touch, pointer, button);
+        }
         return false;
     }
 
     @Override
     public boolean touchUp(Vector2 touch, int pointer, int button) {
-        mainShip.touchUp(touch, pointer, button);
+        if (state == State.PLAYING) {
+            mainShip.touchUp(touch, pointer, button);
+        }
         return false;
     }
 
@@ -127,11 +143,14 @@ public class GameScreen extends BaseScreen {
         for (Star star : stars) {
             star.update(delta);
         }
-        mainShip.update(delta);
-        bulletPool.updateActiveSprites(delta);
-        enemyPool.updateActiveSprites(delta);
         explosionPool.updateActiveSprites(delta);
-        enemyEmitter.generate(delta);
+
+        if (state == State.PLAYING) {
+            mainShip.update(delta);
+            bulletPool.updateActiveSprites(delta);
+            enemyPool.updateActiveSprites(delta);
+            enemyEmitter.generate(delta);
+        }
     }
 
     private void checkCollisions() {
@@ -168,6 +187,9 @@ public class GameScreen extends BaseScreen {
                 }
             }
         }
+        if (mainShip.isDestroyed()) {
+            state = State.GAME_OVER;
+        }
     }
 
     private void freeAllDestroyed() {
@@ -183,9 +205,13 @@ public class GameScreen extends BaseScreen {
         for (Star star : stars) {
             star.draw(batch);
         }
-        mainShip.draw(batch);
-        bulletPool.drawActiveSprites(batch);
-        enemyPool.drawActiveSprites(batch);
+        if (state == State.PLAYING) {
+            mainShip.draw(batch);
+            bulletPool.drawActiveSprites(batch);
+            enemyPool.drawActiveSprites(batch);
+        } else {
+            gameOver.draw(batch);
+        }
         explosionPool.drawActiveSprites(batch);
         batch.end();
     }
