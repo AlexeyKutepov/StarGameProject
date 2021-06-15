@@ -74,6 +74,10 @@ public class Ship extends Sprite {
         return damage;
     }
 
+    public int getHp() {
+        return hp;
+    }
+
     public void setBulletPos(Vector2 bulletPos) {
         this.bulletPos.set(bulletPos);
     }
