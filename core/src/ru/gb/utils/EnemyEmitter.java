@@ -107,6 +107,7 @@ public class EnemyEmitter {
             float enemyHalfWidth = enemyShip.getHalfWidth();
             enemyShip.pos.x = Rnd.nextFloat(worldBounds.getLeft() + enemyHalfWidth, worldBounds.getRight() - enemyHalfWidth);
             enemyShip.setBottom(worldBounds.getTop());
+            enemyShip.setBulletPos(enemyShip.pos);
         }
     }
 }
